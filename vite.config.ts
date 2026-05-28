@@ -8,8 +8,17 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
+  },
+  vite: {
+    // Lovable não aceita variáveis com prefixo VITE_ no painel de Secrets.
+    // Aqui mapeamos os nomes sem prefixo (SUPABASE_URL, SUPABASE_ANON_KEY)
+    // para as variáveis que o cliente Supabase lê via import.meta.env.
+    define: {
+      "import.meta.env.VITE_SUPABASE_URL":
+        JSON.stringify(process.env.SUPABASE_URL ?? ""),
+      "import.meta.env.VITE_SUPABASE_ANON_KEY":
+        JSON.stringify(process.env.SUPABASE_ANON_KEY ?? ""),
+    },
   },
 });
