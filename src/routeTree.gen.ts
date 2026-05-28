@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SolicitarAcessoRouteImport } from './routes/solicitar-acesso'
+import { Route as AutorizarRouteImport } from './routes/autorizar'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as FoPositivoRouteImport } from './routes/fo-positivo'
@@ -18,6 +20,16 @@ import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilIdRouteImport } from './routes/perfil.$id'
 
+const SolicitarAcessoRoute = SolicitarAcessoRouteImport.update({
+  id: '/solicitar-acesso',
+  path: '/solicitar-acesso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AutorizarRoute = AutorizarRouteImport.update({
+  id: '/autorizar',
+  path: '/autorizar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
@@ -67,8 +79,11 @@ export interface FileRoutesByFullPath {
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
   '/relatorios': typeof RelatoriosRoute
+  '/autorizar': typeof AutorizarRoute
+  '/solicitar-acesso': typeof SolicitarAcessoRoute
   '/perfil/$id': typeof PerfilIdRoute
 }
+
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
@@ -77,8 +92,11 @@ export interface FileRoutesByTo {
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
   '/relatorios': typeof RelatoriosRoute
+  '/autorizar': typeof AutorizarRoute
+  '/solicitar-acesso': typeof SolicitarAcessoRoute
   '/perfil/$id': typeof PerfilIdRoute
 }
+
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
@@ -88,41 +106,17 @@ export interface FileRoutesById {
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
   '/relatorios': typeof RelatoriosRoute
+  '/autorizar': typeof AutorizarRoute
+  '/solicitar-acesso': typeof SolicitarAcessoRoute
   '/perfil/$id': typeof PerfilIdRoute
 }
+
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/alunos'
-    | '/dashboard'
-    | '/fo-negativo'
-    | '/fo-positivo'
-    | '/ranking'
-    | '/relatorios'
-    | '/perfil/$id'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/alunos'
-    | '/dashboard'
-    | '/fo-negativo'
-    | '/fo-positivo'
-    | '/ranking'
-    | '/relatorios'
-    | '/perfil/$id'
-  id:
-    | '__root__'
-    | '/'
-    | '/alunos'
-    | '/dashboard'
-    | '/fo-negativo'
-    | '/fo-positivo'
-    | '/ranking'
-    | '/relatorios'
-    | '/perfil/$id'
   fileRoutesById: FileRoutesById
 }
+
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlunosRoute: typeof AlunosRoute
@@ -131,6 +125,8 @@ export interface RootRouteChildren {
   FoPositivoRoute: typeof FoPositivoRoute
   RankingRoute: typeof RankingRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  AutorizarRoute: typeof AutorizarRoute
+  SolicitarAcessoRoute: typeof SolicitarAcessoRoute
   PerfilIdRoute: typeof PerfilIdRoute
 }
 
@@ -192,6 +188,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/autorizar': {
+      id: '/autorizar'
+      path: '/autorizar'
+      fullPath: '/autorizar'
+      preLoaderRoute: typeof AutorizarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solicitar-acesso': {
+      id: '/solicitar-acesso'
+      path: '/solicitar-acesso'
+      fullPath: '/solicitar-acesso'
+      preLoaderRoute: typeof SolicitarAcessoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -203,6 +213,8 @@ const rootRouteChildren: RootRouteChildren = {
   FoPositivoRoute: FoPositivoRoute,
   RankingRoute: RankingRoute,
   RelatoriosRoute: RelatoriosRoute,
+  AutorizarRoute: AutorizarRoute,
+  SolicitarAcessoRoute: SolicitarAcessoRoute,
   PerfilIdRoute: PerfilIdRoute,
 }
 export const routeTree = rootRouteImport

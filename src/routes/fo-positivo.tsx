@@ -43,7 +43,7 @@ export const Route = createFileRoute("/fo-positivo")({
 function FoPositivo() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [_, force] = useState(0);
+  const [, forceUpdate] = useState(0);
 
   const [alunoId, setAlunoId] = useState(alunos[0].id);
   const [categoria, setCategoria] = useState(CATEGORIAS_POSITIVAS[0]);
@@ -71,7 +71,7 @@ function FoPositivo() {
     toast.success("FO+ registrado", { description: `+${pontos} pts atribuídos.` });
     setDescricao("");
     setOpen(false);
-    force((x) => x + 1);
+    forceUpdate((x) => x + 1);
   };
 
   return (

@@ -46,7 +46,7 @@ const PONTOS_GRAVIDADE: Record<Gravidade, number> = { Leve: 2, Média: 5, Grave:
 function FoNegativo() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [_, force] = useState(0);
+  const [, forceUpdate] = useState(0);
 
   const [alunoId, setAlunoId] = useState(alunos[0].id);
   const [categoria, setCategoria] = useState(CATEGORIAS_NEGATIVAS[0]);
@@ -75,7 +75,7 @@ function FoNegativo() {
     toast.error("FO- registrado", { description: `${gravidade} · -${PONTOS_GRAVIDADE[gravidade]} pts.` });
     setDescricao("");
     setOpen(false);
-    force((x) => x + 1);
+    forceUpdate((x) => x + 1);
   };
 
   return (
