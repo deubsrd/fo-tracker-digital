@@ -5,7 +5,7 @@ import { RequireAuth } from "@/components/require-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { alunos, registros, totaisPorPelotao } from "@/lib/mock-data";
+import { alunos, registros, rankingAlunos } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/relatorios")({
   head: () => ({ meta: [{ title: "Relatórios — CFC 2026" }] }),
@@ -19,12 +19,12 @@ export const Route = createFileRoute("/relatorios")({
 function Relatorios() {
   const exportar = (formato: string) =>
     toast.info(`Exportação ${formato}`, {
-      description: "Será habilitada com o Lovable Cloud e geração no servidor.",
+      description: "Será habilitada com integração ao banco de dados.",
     });
 
-  const fop = registros.filter((r) => r.tipo === "FO+").length;
-  const fon = registros.filter((r) => r.tipo === "FO-").length;
-  const porPel = totaisPorPelotao();
+  const fop     = registros.filter((r) => r.tipo === "FO+").length;
+  const fon     = registros.filter((r) => r.tipo === "FO-").length;
+  const ranking = rankingAlunos();
 
   return (
     <div className="space-y-6">
@@ -35,7 +35,7 @@ function Relatorios() {
         <h1 className="text-3xl font-stencil font-bold mt-1">Relatórios</h1>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         <RelCard
           icon={FileText}
           title="Relatório Individual"
@@ -45,52 +45,63 @@ function Relatorios() {
         <RelCard
           icon={FileText}
           title="Relatório da Turma"
-          desc="Consolidado por pelotão com gráficos."
+          desc="Consolidado geral da turma CFC 2026."
           onExport={() => exportar("PDF Turma")}
         />
         <RelCard
           icon={FileText}
           title="Relatório Disciplinar"
-          desc="Foco em ocorrências FO- e gravidades."
+          desc="Foco em ocorrências FO-."
           onExport={() => exportar("PDF Disciplinar")}
         />
       </div>
 
       <Card className="shadow-command">
         <CardHeader>
-          <CardTitle className="font-stencil tracking-wider">Resumo Geral</CardTitle>
+          <CardTitle className="font-stencil tracking-wider">Resumo da Turma</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Stat label="Alunos" value={alunos.length} />
-            <Stat label="FO+" value={fop} tone="success" />
-            <Stat label="FO-" value={fon} tone="destructive" />
+            <Stat label="Alunos"    value={alunos.length} />
+            <Stat label="FO+"       value={fop}  tone="success" />
+            <Stat label="FO-"       value={fon}  tone="destructive" />
             <Stat label="Registros" value={registros.length} />
           </div>
 
+          {/* Tabela de saldos */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-[11px] uppercase tracking-widest text-muted-foreground">
-                  <th className="py-2">Pelotão</th>
-                  <th className="py-2">FO+</th>
-                  <th className="py-2">FO-</th>
+                  <th className="py-2 pr-4">Pos.</th>
+                  <th className="py-2 pr-4">Aluno</th>
+                  <th className="py-2 pr-4">FO+</th>
+                  <th className="py-2 pr-4">FO-</th>
                   <th className="py-2 text-right">Saldo</th>
                 </tr>
               </thead>
               <tbody>
-                {porPel.map((p) => (
-                  <tr key={p.pelotao} className="border-b border-border/60">
-                    <td className="py-3 font-semibold">{p.pelotao}</td>
-                    <td className="py-3">
-                      <Badge variant="outline" className="border-success/50 text-success">{p.fop}</Badge>
+                {ranking.map((a, i) => (
+                  <tr key={a.id} className="border-b border-border/60">
+                    <td className="py-2 pr-4 text-muted-foreground">{i + 1}</td>
+                    <td className="py-2 pr-4 font-semibold">
+                      {a.nome}
+                      <span className="ml-2 text-[11px] text-muted-foreground font-normal">
+                        Nº {a.numeroGuerra}
+                      </span>
                     </td>
-                    <td className="py-3">
-                      <Badge variant="outline" className="border-destructive/50 text-destructive">{p.fon}</Badge>
+                    <td className="py-2 pr-4">
+                      <Badge variant="outline" className="border-success/50 text-success">
+                        {a.fop}
+                      </Badge>
                     </td>
-                    <td className="py-3 text-right font-stencil font-bold text-gold">
-                      {p.fop - p.fon > 0 ? "+" : ""}
-                      {p.fop - p.fon}
+                    <td className="py-2 pr-4">
+                      <Badge variant="outline" className="border-destructive/50 text-destructive">
+                        {a.fon}
+                      </Badge>
+                    </td>
+                    <td className="py-2 text-right font-stencil font-bold text-gold">
+                      {a.pontuacao > 0 ? "+" : ""}{a.pontuacao}
                     </td>
                   </tr>
                 ))}
@@ -99,7 +110,10 @@ function Relatorios() {
           </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            <Button onClick={() => exportar("PDF")} className="bg-gradient-gold text-gold-foreground font-stencil tracking-widest hover:opacity-90">
+            <Button
+              onClick={() => exportar("PDF")}
+              className="bg-gradient-gold text-gold-foreground font-stencil tracking-widest hover:opacity-90"
+            >
               <FileDown className="size-4 mr-2" /> Exportar PDF
             </Button>
             <Button onClick={() => exportar("Excel")} variant="outline" className="font-stencil tracking-widest">
@@ -112,13 +126,8 @@ function Relatorios() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  tone,
-}: { label: string; value: number; tone?: "success" | "destructive" }) {
-  const c =
-    tone === "success" ? "text-success" : tone === "destructive" ? "text-destructive" : "text-foreground";
+function Stat({ label, value, tone }: { label: string; value: number; tone?: "success" | "destructive" }) {
+  const c = tone === "success" ? "text-success" : tone === "destructive" ? "text-destructive" : "text-foreground";
   return (
     <div className="rounded border border-border bg-accent/30 p-4">
       <div className="text-[11px] uppercase tracking-widest text-muted-foreground">{label}</div>
@@ -128,10 +137,7 @@ function Stat({
 }
 
 function RelCard({
-  icon: Icon,
-  title,
-  desc,
-  onExport,
+  icon: Icon, title, desc, onExport,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   title: string;

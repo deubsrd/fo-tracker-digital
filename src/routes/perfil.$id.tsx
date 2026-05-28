@@ -1,21 +1,19 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { ShieldCheck, ShieldAlert, QrCode, Award, Calendar, Phone } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Award, Calendar, Phone, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { RequireAuth } from "@/components/require-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  alunoPorId,
-  pontuacaoAluno,
-  registrosDoAluno,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  alunoPorId, pontuacaoAluno, registrosDoAluno, deleteRegistro,
 } from "@/lib/mock-data";
 import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 
 export const Route = createFileRoute("/perfil/$id")({
@@ -29,54 +27,59 @@ export const Route = createFileRoute("/perfil/$id")({
 
 function Perfil() {
   const { id } = Route.useParams();
+  const [, forceUpdate] = useState(0);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const aluno = alunoPorId(id);
   if (!aluno) return <Navigate to="/alunos" />;
 
   const regs = registrosDoAluno(id);
-  const pts = pontuacaoAluno(id);
-  const fop = regs.filter((r) => r.tipo === "FO+").length;
-  const fon = regs.filter((r) => r.tipo === "FO-").length;
+  const pts  = pontuacaoAluno(id);
+  const fop  = regs.filter((r) => r.tipo === "FO+").length;
+  const fon  = regs.filter((r) => r.tipo === "FO-").length;
 
   // Evolução acumulada
   let acc = 0;
   const evolucao = [...regs].reverse().map((r) => {
-    acc += r.pontuacao;
-    return { data: r.data, pontos: acc };
+    acc += r.tipo === "FO+" ? 1 : -1;
+    return { data: r.data, saldo: acc };
   });
 
-  const medalhas: Array<{ label: string; ativa: boolean }> = [
-    { label: "Estreante", ativa: regs.length > 0 },
-    { label: "5 FO+", ativa: fop >= 5 },
-    { label: "Líder", ativa: pts >= 30 },
-    { label: "Disciplina", ativa: fon === 0 && regs.length > 0 },
-  ];
+  const confirmDelete = () => {
+    if (!deletingId) return;
+    deleteRegistro(deletingId);
+    setDeletingId(null);
+    forceUpdate((x) => x + 1);
+    toast.success("Registro removido");
+  };
 
   return (
     <div className="space-y-6">
+      {/* Card do aluno */}
       <Card className="shadow-command overflow-hidden">
-        <div className="h-24 bg-gradient-command pattern-camo" />
-        <CardContent className="-mt-12 relative">
+        <div className="h-20 bg-gradient-command pattern-camo" />
+        <CardContent className="-mt-10 relative">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4">
-            <div className="size-24 rounded bg-gradient-gold border-4 border-background grid place-items-center font-stencil text-3xl font-bold text-gold-foreground shadow-gold">
-              {aluno.nome
-                .split(" ")
-                .map((p) => p[0])
-                .join("")
-                .slice(0, 2)}
+            <div className="size-20 rounded bg-gradient-gold border-4 border-background grid place-items-center font-stencil text-2xl font-bold text-gold-foreground shadow-gold">
+              {aluno.nome.split(" ").map((p) => p[0]).join("").slice(0, 2)}
             </div>
             <div className="flex-1">
               <div className="font-stencil text-xs uppercase tracking-widest text-gold">
-                Nº {aluno.numeroGuerra} · {aluno.pelotao}
+                Nº {aluno.numeroGuerra}
               </div>
               <h1 className="text-3xl font-stencil font-bold mt-1">{aluno.nome}</h1>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1"><Calendar className="size-3" /> {aluno.dataNascimento}</span>
-                <span className="inline-flex items-center gap-1"><Phone className="size-3" /> {aluno.contato}</span>
+              <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Calendar className="size-3" /> {aluno.dataNascimento}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Phone className="size-3" /> {aluno.contato}
+                </span>
                 <Badge variant="outline" className="text-[10px]">{aluno.situacao}</Badge>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Pontuação</div>
+              <div className="text-[11px] uppercase tracking-widest text-muted-foreground">Saldo</div>
               <div className={`text-4xl font-stencil font-bold ${pts >= 0 ? "text-gold" : "text-destructive"}`}>
                 {pts > 0 ? "+" : ""}{pts}
               </div>
@@ -85,20 +88,21 @@ function Perfil() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Stat icon={ShieldCheck} label="FO+" value={fop} tone="success" />
-        <Stat icon={ShieldAlert} label="FO-" value={fon} tone="destructive" />
-        <Stat icon={Award} label="Medalhas" value={medalhas.filter((m) => m.ativa).length} tone="gold" />
-        <Stat icon={QrCode} label="QR Perfil" value="—" tone="default" />
+      {/* Stats */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard icon={ShieldCheck} label="FO+"      value={fop}  tone="success" />
+        <StatCard icon={ShieldAlert} label="FO-"      value={fon}  tone="destructive" />
+        <StatCard icon={Award}       label="Registros" value={regs.length} tone="gold" />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="shadow-command lg:col-span-2">
+      {/* Gráfico */}
+      {evolucao.length > 1 && (
+        <Card className="shadow-command">
           <CardHeader>
-            <CardTitle className="font-stencil tracking-wider">Evolução da Pontuação</CardTitle>
+            <CardTitle className="font-stencil tracking-wider">Evolução do Saldo</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={evolucao}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -112,95 +116,102 @@ function Perfil() {
                       fontSize: 12,
                     }}
                   />
-                  <Line type="monotone" dataKey="pontos" stroke="var(--gold)" strokeWidth={2} dot={{ fill: "var(--gold)", r: 3 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="saldo"
+                    stroke="var(--gold)"
+                    strokeWidth={2}
+                    dot={{ fill: "var(--gold)", r: 3 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
+      )}
 
-        <Card className="shadow-command">
-          <CardHeader>
-            <CardTitle className="font-stencil tracking-wider">Medalhas</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3">
-            {medalhas.map((m) => (
-              <div
-                key={m.label}
-                className={`rounded border p-3 text-center ${
-                  m.ativa
-                    ? "border-gold bg-gold/10 text-gold shadow-gold"
-                    : "border-border bg-muted/30 text-muted-foreground opacity-50"
-                }`}
-              >
-                <Award className="size-6 mx-auto" />
-                <div className="font-stencil text-xs mt-2 tracking-wider">{m.label}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Histórico */}
       <Card className="shadow-command">
         <CardHeader>
           <CardTitle className="font-stencil tracking-wider">Histórico de Ocorrências</CardTitle>
         </CardHeader>
         <CardContent className="divide-y divide-border">
           {regs.length === 0 && (
-            <p className="text-sm text-muted-foreground py-4">Nenhum registro até o momento.</p>
+            <p className="text-sm text-muted-foreground py-4">
+              Nenhum registro até o momento.
+            </p>
           )}
           {regs.map((r) => {
             const pos = r.tipo === "FO+";
             return (
-              <div key={r.id} className="flex items-start gap-4 py-3 first:pt-0 last:pb-0">
+              <div key={r.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                 <div
-                  className={`size-10 rounded grid place-items-center shrink-0 ${
+                  className={`size-8 rounded grid place-items-center shrink-0 mt-0.5 ${
                     pos ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"
                   }`}
                 >
-                  {pos ? <ShieldCheck className="size-5" /> : <ShieldAlert className="size-5" />}
+                  {pos ? <ShieldCheck className="size-4" /> : <ShieldAlert className="size-4" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className="text-[10px]">{r.categoria}</Badge>
-                    {r.gravidade && (
-                      <Badge variant="outline" className="text-[10px] border-gold text-gold">{r.gravidade}</Badge>
-                    )}
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] ${pos ? "border-success/50 text-success" : "border-destructive/50 text-destructive"}`}
+                    >
+                      {r.tipo}
+                    </Badge>
                     <span className="text-[11px] text-muted-foreground uppercase tracking-wider">
                       {r.data} · {r.horario} · {r.responsavel}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">{r.descricao}</p>
                 </div>
-                <div className={`font-stencil text-lg font-bold ${pos ? "text-success" : "text-destructive"}`}>
-                  {pos ? "+" : ""}{r.pontuacao}
-                </div>
+                <button
+                  onClick={() => setDeletingId(r.id)}
+                  className="shrink-0 p-1.5 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors"
+                  aria-label="Excluir"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
               </div>
             );
           })}
         </CardContent>
       </Card>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deletingId} onOpenChange={(o) => !o && setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-stencil">Excluir registro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
-function Stat({
-  icon: Icon,
-  label,
-  value,
-  tone,
+function StatCard({
+  icon: Icon, label, value, tone,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  value: number | string;
-  tone: "default" | "success" | "destructive" | "gold";
+  value: number;
+  tone: "success" | "destructive" | "gold";
 }) {
-  const c = {
-    default: "text-foreground",
-    success: "text-success",
-    destructive: "text-destructive",
-    gold: "text-gold",
-  }[tone];
+  const c = { success: "text-success", destructive: "text-destructive", gold: "text-gold" }[tone];
   return (
     <Card className="shadow-command">
       <CardContent className="pt-5 flex items-center gap-3">

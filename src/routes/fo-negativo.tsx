@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShieldAlert, Plus } from "lucide-react";
+import { ShieldAlert, Plus, Trash2, Search, CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { RequireAuth } from "@/components/require-auth";
@@ -8,27 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  alunoPorId,
-  alunos,
-  CATEGORIAS_NEGATIVAS,
-  registros,
-} from "@/lib/mock-data";
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { alunoPorId, alunoPorNumero, deleteRegistro, registros } from "@/lib/mock-data";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/fo-negativo")({
@@ -40,46 +27,58 @@ export const Route = createFileRoute("/fo-negativo")({
   ),
 });
 
-type Gravidade = "Leve" | "Média" | "Grave";
-const PONTOS_GRAVIDADE: Record<Gravidade, number> = { Leve: 2, Média: 5, Grave: 10 };
-
 function FoNegativo() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [, forceUpdate] = useState(0);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const [alunoId, setAlunoId] = useState(alunos[0].id);
-  const [categoria, setCategoria] = useState(CATEGORIAS_NEGATIVAS[0]);
+  // form state
+  const [numero, setNumero] = useState("");
   const [descricao, setDescricao] = useState("");
-  const [gravidade, setGravidade] = useState<Gravidade>("Leve");
 
   const lista = registros
     .filter((r) => r.tipo === "FO-")
-    .sort((a, b) => (a.data < b.data ? 1 : -1));
+    .sort((a, b) => (a.data + a.horario < b.data + b.horario ? 1 : -1));
+
+  const alunoSelecionado = numero.trim().length > 0 ? alunoPorNumero(numero) : undefined;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!alunoSelecionado) {
+      toast.error("Número de guerra não encontrado");
+      return;
+    }
+    if (!descricao.trim()) return;
+
     const now = new Date();
     registros.push({
-      id: "r" + (registros.length + 1),
-      alunoId,
+      id: "r" + Date.now(),
+      alunoId: alunoSelecionado.id,
       tipo: "FO-",
       data: now.toISOString().slice(0, 10),
       horario: now.toTimeString().slice(0, 5),
-      categoria,
-      descricao,
+      descricao: descricao.trim(),
       responsavel: user?.nome ?? "—",
-      pontuacao: -PONTOS_GRAVIDADE[gravidade],
-      gravidade,
     });
-    toast.error("FO- registrado", { description: `${gravidade} · -${PONTOS_GRAVIDADE[gravidade]} pts.` });
+    toast.success(`FO- registrado para ${alunoSelecionado.nome}`);
+    setNumero("");
     setDescricao("");
     setOpen(false);
     forceUpdate((x) => x + 1);
   };
 
+  const confirmDelete = () => {
+    if (!deletingId) return;
+    deleteRegistro(deletingId);
+    setDeletingId(null);
+    forceUpdate((x) => x + 1);
+    toast.success("Registro removido");
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="font-stencil text-xs uppercase tracking-widest text-destructive">
@@ -92,54 +91,55 @@ function FoNegativo() {
             {lista.length} ocorrências disciplinares
           </p>
         </div>
+
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="destructive" className="font-stencil tracking-widest">
-              <Plus className="size-4 mr-1" /> Novo FO-
+              <Plus className="size-4 mr-1" /> Registrar FO-
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="font-stencil tracking-wider">Registrar FO-</DialogTitle>
+              <DialogTitle className="font-stencil tracking-wider">
+                Novo FO-
+              </DialogTitle>
             </DialogHeader>
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} className="space-y-5">
+              {/* Número de guerra */}
               <div className="space-y-2">
-                <Label className="font-stencil text-xs">Aluno</Label>
-                <Select value={alunoId} onValueChange={setAlunoId}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {alunos.map((a) => (
-                      <SelectItem key={a.id} value={a.id}>
-                        Nº {a.numeroGuerra} — {a.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="font-stencil text-xs">Número de Guerra</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                  <Input
+                    value={numero}
+                    onChange={(e) => setNumero(e.target.value)}
+                    placeholder="001"
+                    className="pl-9 h-11"
+                    maxLength={6}
+                    required
+                  />
+                  {numero.trim().length > 0 && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {alunoSelecionado ? (
+                        <CheckCircle2 className="size-4 text-success" />
+                      ) : (
+                        <XCircle className="size-4 text-destructive" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                {alunoSelecionado ? (
+                  <p className="text-xs text-success font-semibold">
+                    {alunoSelecionado.nome}
+                  </p>
+                ) : numero.trim().length > 0 ? (
+                  <p className="text-xs text-destructive">Número não encontrado</p>
+                ) : null}
               </div>
+
+              {/* Descrição */}
               <div className="space-y-2">
-                <Label className="font-stencil text-xs">Categoria</Label>
-                <Select value={categoria} onValueChange={setCategoria}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIAS_NEGATIVAS.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="font-stencil text-xs">Gravidade</Label>
-                <Select value={gravidade} onValueChange={(v) => setGravidade(v as Gravidade)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Leve">Leve (-2)</SelectItem>
-                    <SelectItem value="Média">Média (-5)</SelectItem>
-                    <SelectItem value="Grave">Grave (-10)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="font-stencil text-xs">Descrição</Label>
+                <Label className="font-stencil text-xs">Motivo</Label>
                 <Textarea
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
@@ -148,44 +148,83 @@ function FoNegativo() {
                   placeholder="Descreva a ocorrência…"
                 />
               </div>
-              <Button type="submit" variant="destructive" className="w-full font-stencil tracking-widest">
-                Registrar
+
+              <Button
+                type="submit"
+                disabled={!alunoSelecionado}
+                variant="destructive"
+                className="w-full font-stencil tracking-widest disabled:opacity-40"
+              >
+                Lançar FO-
               </Button>
             </form>
           </DialogContent>
         </Dialog>
       </header>
 
-      <div className="grid gap-3">
-        {lista.map((r) => {
-          const a = alunoPorId(r.alunoId);
-          return (
-            <Card key={r.id} className="shadow-command border-l-4 border-l-destructive">
-              <CardContent className="pt-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold">{a?.nome}</span>
-                      <Badge variant="outline" className="text-[10px]">Nº {a?.numeroGuerra}</Badge>
-                      <Badge className="text-[10px] bg-destructive/20 text-destructive border-destructive/40">{r.categoria}</Badge>
-                      {r.gravidade && (
-                        <Badge variant="outline" className="text-[10px] border-gold text-gold">
-                          {r.gravidade}
-                        </Badge>
-                      )}
+      {/* List */}
+      {lista.length === 0 ? (
+        <div className="py-16 text-center text-muted-foreground">
+          Nenhuma ocorrência registrada.
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {lista.map((r) => {
+            const a = alunoPorId(r.alunoId);
+            return (
+              <Card key={r.id} className="shadow-command border-l-4 border-l-destructive">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <ShieldAlert className="size-4 text-destructive shrink-0" />
+                        <span className="font-semibold">{a?.nome}</span>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                          Nº {a?.numeroGuerra}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                        {r.descricao}
+                      </p>
+                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-2">
+                        {r.data} · {r.horario} · por {r.responsavel}
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">{r.descricao}</p>
-                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-2">
-                      {r.data} · {r.horario} · por {r.responsavel}
-                    </div>
+                    <button
+                      onClick={() => setDeletingId(r.id)}
+                      className="shrink-0 p-2 rounded hover:bg-destructive/15 text-muted-foreground hover:text-destructive transition-colors"
+                      aria-label="Excluir"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
                   </div>
-                  <div className="text-2xl font-stencil font-bold text-destructive">{r.pontuacao}</div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deletingId} onOpenChange={(o) => !o && setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-stencil">Excluir FO-?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. O registro será removido permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
