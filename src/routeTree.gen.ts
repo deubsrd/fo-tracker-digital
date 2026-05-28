@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as FoPositivoRouteImport } from './routes/fo-positivo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as IndexRouteImport } from './routes/index'
 
+const FoPositivoRoute = FoPositivoRouteImport.update({
+  id: '/fo-positivo',
+  path: '/fo-positivo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -33,34 +39,45 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/dashboard': typeof DashboardRoute
+  '/fo-positivo': typeof FoPositivoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/dashboard': typeof DashboardRoute
+  '/fo-positivo': typeof FoPositivoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/dashboard': typeof DashboardRoute
+  '/fo-positivo': typeof FoPositivoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alunos' | '/dashboard'
+  fullPaths: '/' | '/alunos' | '/dashboard' | '/fo-positivo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alunos' | '/dashboard'
-  id: '__root__' | '/' | '/alunos' | '/dashboard'
+  to: '/' | '/alunos' | '/dashboard' | '/fo-positivo'
+  id: '__root__' | '/' | '/alunos' | '/dashboard' | '/fo-positivo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlunosRoute: typeof AlunosRoute
   DashboardRoute: typeof DashboardRoute
+  FoPositivoRoute: typeof FoPositivoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/fo-positivo': {
+      id: '/fo-positivo'
+      path: '/fo-positivo'
+      fullPath: '/fo-positivo'
+      preLoaderRoute: typeof FoPositivoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlunosRoute: AlunosRoute,
   DashboardRoute: DashboardRoute,
+  FoPositivoRoute: FoPositivoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
