@@ -9,38 +9,175 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
+import { Route as RankingRouteImport } from './routes/ranking'
+import { Route as FoPositivoRouteImport } from './routes/fo-positivo'
+import { Route as FoNegativoRouteImport } from './routes/fo-negativo'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PerfilIdRouteImport } from './routes/perfil.$id'
 
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RankingRoute = RankingRouteImport.update({
+  id: '/ranking',
+  path: '/ranking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FoPositivoRoute = FoPositivoRouteImport.update({
+  id: '/fo-positivo',
+  path: '/fo-positivo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FoNegativoRoute = FoNegativoRouteImport.update({
+  id: '/fo-negativo',
+  path: '/fo-negativo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlunosRoute = AlunosRouteImport.update({
+  id: '/alunos',
+  path: '/alunos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerfilIdRoute = PerfilIdRouteImport.update({
+  id: '/perfil/$id',
+  path: '/perfil/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/alunos': typeof AlunosRoute
+  '/dashboard': typeof DashboardRoute
+  '/fo-negativo': typeof FoNegativoRoute
+  '/fo-positivo': typeof FoPositivoRoute
+  '/ranking': typeof RankingRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/perfil/$id': typeof PerfilIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/alunos': typeof AlunosRoute
+  '/dashboard': typeof DashboardRoute
+  '/fo-negativo': typeof FoNegativoRoute
+  '/fo-positivo': typeof FoPositivoRoute
+  '/ranking': typeof RankingRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/perfil/$id': typeof PerfilIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/alunos': typeof AlunosRoute
+  '/dashboard': typeof DashboardRoute
+  '/fo-negativo': typeof FoNegativoRoute
+  '/fo-positivo': typeof FoPositivoRoute
+  '/ranking': typeof RankingRoute
+  '/relatorios': typeof RelatoriosRoute
+  '/perfil/$id': typeof PerfilIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/alunos'
+    | '/dashboard'
+    | '/fo-negativo'
+    | '/fo-positivo'
+    | '/ranking'
+    | '/relatorios'
+    | '/perfil/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/alunos'
+    | '/dashboard'
+    | '/fo-negativo'
+    | '/fo-positivo'
+    | '/ranking'
+    | '/relatorios'
+    | '/perfil/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/alunos'
+    | '/dashboard'
+    | '/fo-negativo'
+    | '/fo-positivo'
+    | '/ranking'
+    | '/relatorios'
+    | '/perfil/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AlunosRoute: typeof AlunosRoute
+  DashboardRoute: typeof DashboardRoute
+  FoNegativoRoute: typeof FoNegativoRoute
+  FoPositivoRoute: typeof FoPositivoRoute
+  RankingRoute: typeof RankingRoute
+  RelatoriosRoute: typeof RelatoriosRoute
+  PerfilIdRoute: typeof PerfilIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ranking': {
+      id: '/ranking'
+      path: '/ranking'
+      fullPath: '/ranking'
+      preLoaderRoute: typeof RankingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fo-positivo': {
+      id: '/fo-positivo'
+      path: '/fo-positivo'
+      fullPath: '/fo-positivo'
+      preLoaderRoute: typeof FoPositivoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fo-negativo': {
+      id: '/fo-negativo'
+      path: '/fo-negativo'
+      fullPath: '/fo-negativo'
+      preLoaderRoute: typeof FoNegativoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alunos': {
+      id: '/alunos'
+      path: '/alunos'
+      fullPath: '/alunos'
+      preLoaderRoute: typeof AlunosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +185,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/perfil/$id': {
+      id: '/perfil/$id'
+      path: '/perfil/$id'
+      fullPath: '/perfil/$id'
+      preLoaderRoute: typeof PerfilIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AlunosRoute: AlunosRoute,
+  DashboardRoute: DashboardRoute,
+  FoNegativoRoute: FoNegativoRoute,
+  FoPositivoRoute: FoPositivoRoute,
+  RankingRoute: RankingRoute,
+  RelatoriosRoute: RelatoriosRoute,
+  PerfilIdRoute: PerfilIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
