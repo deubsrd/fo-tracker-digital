@@ -16,6 +16,7 @@ import { Route as FoNegativoRouteImport } from './routes/fo-negativo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PerfilIdRouteImport } from './routes/perfil.$id'
 
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
@@ -52,6 +53,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerfilIdRoute = PerfilIdRouteImport.update({
+  id: '/perfil/$id',
+  path: '/perfil/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
   '/relatorios': typeof RelatoriosRoute
+  '/perfil/$id': typeof PerfilIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
   '/relatorios': typeof RelatoriosRoute
+  '/perfil/$id': typeof PerfilIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
   '/relatorios': typeof RelatoriosRoute
+  '/perfil/$id': typeof PerfilIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/fo-positivo'
     | '/ranking'
     | '/relatorios'
+    | '/perfil/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/fo-positivo'
     | '/ranking'
     | '/relatorios'
+    | '/perfil/$id'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/fo-positivo'
     | '/ranking'
     | '/relatorios'
+    | '/perfil/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   FoPositivoRoute: typeof FoPositivoRoute
   RankingRoute: typeof RankingRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  PerfilIdRoute: typeof PerfilIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/perfil/$id': {
+      id: '/perfil/$id'
+      path: '/perfil/$id'
+      fullPath: '/perfil/$id'
+      preLoaderRoute: typeof PerfilIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   FoPositivoRoute: FoPositivoRoute,
   RankingRoute: RankingRoute,
   RelatoriosRoute: RelatoriosRoute,
+  PerfilIdRoute: PerfilIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
