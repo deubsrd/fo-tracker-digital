@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as FoPositivoRouteImport } from './routes/fo-positivo'
+import { Route as FoNegativoRouteImport } from './routes/fo-negativo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const FoPositivoRoute = FoPositivoRouteImport.update({
   id: '/fo-positivo',
   path: '/fo-positivo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FoNegativoRoute = FoNegativoRouteImport.update({
+  id: '/fo-negativo',
+  path: '/fo-negativo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/dashboard': typeof DashboardRoute
+  '/fo-negativo': typeof FoNegativoRoute
   '/fo-positivo': typeof FoPositivoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/dashboard': typeof DashboardRoute
+  '/fo-negativo': typeof FoNegativoRoute
   '/fo-positivo': typeof FoPositivoRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,28 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/dashboard': typeof DashboardRoute
+  '/fo-negativo': typeof FoNegativoRoute
   '/fo-positivo': typeof FoPositivoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alunos' | '/dashboard' | '/fo-positivo'
+  fullPaths: '/' | '/alunos' | '/dashboard' | '/fo-negativo' | '/fo-positivo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alunos' | '/dashboard' | '/fo-positivo'
-  id: '__root__' | '/' | '/alunos' | '/dashboard' | '/fo-positivo'
+  to: '/' | '/alunos' | '/dashboard' | '/fo-negativo' | '/fo-positivo'
+  id:
+    | '__root__'
+    | '/'
+    | '/alunos'
+    | '/dashboard'
+    | '/fo-negativo'
+    | '/fo-positivo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlunosRoute: typeof AlunosRoute
   DashboardRoute: typeof DashboardRoute
+  FoNegativoRoute: typeof FoNegativoRoute
   FoPositivoRoute: typeof FoPositivoRoute
 }
 
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/fo-positivo'
       fullPath: '/fo-positivo'
       preLoaderRoute: typeof FoPositivoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fo-negativo': {
+      id: '/fo-negativo'
+      path: '/fo-negativo'
+      fullPath: '/fo-negativo'
+      preLoaderRoute: typeof FoNegativoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -106,6 +129,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlunosRoute: AlunosRoute,
   DashboardRoute: DashboardRoute,
+  FoNegativoRoute: FoNegativoRoute,
   FoPositivoRoute: FoPositivoRoute,
 }
 export const routeTree = rootRouteImport
