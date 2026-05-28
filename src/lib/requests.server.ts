@@ -123,7 +123,7 @@ export const submitInstructorRequest = createServerFn({ method: "POST" })
     requests.push(newRequest);
     writeData(requests);
 
-    const baseUrl = process.env.VITE_APP_URL ?? "http://localhost:3000";
+    const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
     const approveUrl = `${baseUrl}/autorizar?token=${token}&acao=aprovar`;
     const denyUrl = `${baseUrl}/autorizar?token=${token}&acao=negar`;
 
