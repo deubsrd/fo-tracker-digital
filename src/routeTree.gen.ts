@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as RankingRouteImport } from './routes/ranking'
 import { Route as FoPositivoRouteImport } from './routes/fo-positivo'
 import { Route as FoNegativoRouteImport } from './routes/fo-negativo'
@@ -16,6 +17,11 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RelatoriosRoute = RelatoriosRouteImport.update({
+  id: '/relatorios',
+  path: '/relatorios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RankingRoute = RankingRouteImport.update({
   id: '/ranking',
   path: '/ranking',
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/fo-negativo': typeof FoNegativoRoute
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
+  '/relatorios': typeof RelatoriosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/fo-negativo': typeof FoNegativoRoute
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
+  '/relatorios': typeof RelatoriosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/fo-negativo': typeof FoNegativoRoute
   '/fo-positivo': typeof FoPositivoRoute
   '/ranking': typeof RankingRoute
+  '/relatorios': typeof RelatoriosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/fo-negativo'
     | '/fo-positivo'
     | '/ranking'
+    | '/relatorios'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/fo-negativo'
     | '/fo-positivo'
     | '/ranking'
+    | '/relatorios'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/fo-negativo'
     | '/fo-positivo'
     | '/ranking'
+    | '/relatorios'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,10 +118,18 @@ export interface RootRouteChildren {
   FoNegativoRoute: typeof FoNegativoRoute
   FoPositivoRoute: typeof FoPositivoRoute
   RankingRoute: typeof RankingRoute
+  RelatoriosRoute: typeof RelatoriosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/relatorios': {
+      id: '/relatorios'
+      path: '/relatorios'
+      fullPath: '/relatorios'
+      preLoaderRoute: typeof RelatoriosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ranking': {
       id: '/ranking'
       path: '/ranking'
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   FoNegativoRoute: FoNegativoRoute,
   FoPositivoRoute: FoPositivoRoute,
   RankingRoute: RankingRoute,
+  RelatoriosRoute: RelatoriosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
